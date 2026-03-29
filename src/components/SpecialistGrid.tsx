@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { sectionReveal, staggerContainer, staggerItem } from "@/lib/motion";
+import { sectionReveal, springStagger, springItem } from "@/lib/motion";
 import { specialists } from "@/lib/specialists";
 
 export default function SpecialistGrid() {
@@ -34,7 +34,7 @@ export default function SpecialistGrid() {
         </motion.p>
 
         <motion.div
-          variants={staggerContainer}
+          variants={springStagger}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
@@ -43,7 +43,7 @@ export default function SpecialistGrid() {
           {specialists.map((specialist) => (
             <motion.a
               key={specialist.name}
-              variants={staggerItem}
+              variants={springItem}
               href={specialist.href}
               className="card-hover group relative"
             >

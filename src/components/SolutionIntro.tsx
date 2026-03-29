@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { sectionReveal, staggerContainer, staggerItem } from "@/lib/motion";
+import { slideFromLeft, springStagger, springItem, sectionReveal } from "@/lib/motion";
 
 const products = [
   {
@@ -51,11 +51,10 @@ export default function SolutionIntro() {
     <section id="solution" className="section-padding">
       <div className="max-w-page mx-auto px-6">
         <motion.div
-          variants={sectionReveal}
+          variants={slideFromLeft}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          custom={0}
           className="text-center mb-6"
         >
           <h2 className="text-[32px] md:text-[48px] font-display font-semibold tracking-[-0.02em] leading-[1.15]">
@@ -81,7 +80,7 @@ export default function SolutionIntro() {
 
         {/* Product Triptych */}
         <motion.div
-          variants={staggerContainer}
+          variants={springStagger}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
@@ -90,7 +89,7 @@ export default function SolutionIntro() {
           {products.map((product) => (
             <motion.a
               key={product.title}
-              variants={staggerItem}
+              variants={springItem}
               href={product.href}
               className={`card-hover group flex flex-col ${
                 product.highlighted

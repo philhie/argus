@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { sectionReveal, staggerContainer, staggerItem } from "@/lib/motion";
+import { scaleReveal, sectionReveal } from "@/lib/motion";
 
 const stats = [
   {
@@ -100,19 +100,19 @@ export default function Problem() {
           </h2>
         </motion.div>
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid md:grid-cols-3 gap-4"
-        >
+        <div className="grid md:grid-cols-3 gap-4">
           {stats.map((stat) => (
-            <motion.div key={stat.label} variants={staggerItem}>
+            <motion.div
+              key={stat.label}
+              variants={scaleReveal}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+            >
               <AnimatedStat stat={stat} />
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

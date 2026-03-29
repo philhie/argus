@@ -1,18 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { sectionReveal } from "@/lib/motion";
+import { scaleReveal } from "@/lib/motion";
 
 export default function FinalCTA() {
   return (
     <section id="demo" className="section-padding">
       <div className="max-w-page mx-auto px-6">
         <motion.div
-          variants={sectionReveal}
+          variants={scaleReveal}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          custom={0}
           className="text-center max-w-2xl mx-auto"
         >
           <h2 className="text-[32px] md:text-[48px] font-display font-semibold tracking-[-0.02em] leading-[1.15] mb-6">
@@ -23,7 +22,7 @@ export default function FinalCTA() {
             15 Minuten. Keine Verpflichtung. Du siehst deinen KI-Mitarbeiter live.
           </p>
 
-          <a href="https://cal.eu/philhie/kengo" target="_blank" rel="noopener noreferrer" className="btn-primary-lg text-lg">
+          <a href="https://cal.eu/philhie/kengo" target="_blank" rel="noopener noreferrer" className="btn-primary-lg text-lg cta-glow">
             Demo vereinbaren
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />

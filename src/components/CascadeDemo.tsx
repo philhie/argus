@@ -22,6 +22,8 @@ interface Scenario {
   kicker: string;
 }
 
+const TAB_LABELS = ["E-Mail", "Morgenroutine", "Abfrage"] as const;
+
 const scenarios: Scenario[] = [
   // Scenario 1: Die Umplanung (reactive — email triggers chain)
   {
@@ -79,6 +81,7 @@ const STEP_DELAY = 900;       // ms between each cascade step
 const TRIGGER_PAUSE = 1200;   // ms to show trigger before cascade starts
 const KICKER_PAUSE = 600;     // ms after last step before kicker
 const END_PAUSE = 3000;       // ms to hold the completed state
+const IDLE_TIMEOUT = 8000;    // ms of no interaction before reverting to auto
 
 /* ─── Component ───────────────────────────────────────── */
 
@@ -87,13 +90,24 @@ export default function CascadeDemo() {
   const [visibleSteps, setVisibleSteps] = useState(-1); // -1 = only trigger, 0+ = steps revealed
   const [showKicker, setShowKicker] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
+  const [interactive, setInteractive] = useState(false);
   const timeoutRefs = useRef<NodeJS.Timeout[]>([]);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Track which step the interactive click should advance to next
+  const interactiveStepRef = useRef(0);
 
   const scenario = scenarios[scenarioIdx];
 
   const clearTimeouts = useCallback(() => {
     timeoutRefs.current.forEach(clearTimeout);
     timeoutRefs.current = [];
+  }, []);
+
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
   }, []);
 
   const runScenario = useCallback((idx: number) => {
@@ -128,17 +142,97 @@ export default function CascadeDemo() {
     timeoutRefs.current.push(nextT);
   }, [clearTimeouts]);
 
+  // Start interactive mode for a given scenario
+  const startInteractive = useCallback((idx: number) => {
+    clearTimeouts();
+    clearIdleTimer();
+    setInteractive(true);
+    setTransitioning(false);
+    setVisibleSteps(-1);
+    setShowKicker(false);
+    setScenarioIdx(idx);
+    interactiveStepRef.current = 0;
+  }, [clearTimeouts, clearIdleTimer]);
+
+  // Revert to auto-play from current scenario
+  const revertToAuto = useCallback(() => {
+    clearIdleTimer();
+    setInteractive(false);
+    runScenario(scenarioIdx);
+  }, [clearIdleTimer, runScenario, scenarioIdx]);
+
+  // Reset idle timer (called on each interaction)
+  const resetIdleTimer = useCallback(() => {
+    clearIdleTimer();
+    idleTimerRef.current = setTimeout(() => {
+      revertToAuto();
+    }, IDLE_TIMEOUT);
+  }, [clearIdleTimer, revertToAuto]);
+
+  // Handle click on demo container
+  const handleContainerClick = useCallback(() => {
+    if (!interactive) {
+      // First click: switch to interactive mode with current scenario
+      startInteractive(scenarioIdx);
+      return;
+    }
+
+    // Already interactive: advance one step
+    resetIdleTimer();
+    const sc = scenarios[scenarioIdx];
+    const nextStep = interactiveStepRef.current;
+
+    if (nextStep < sc.steps.length) {
+      setVisibleSteps(nextStep);
+      interactiveStepRef.current = nextStep + 1;
+    } else if (!showKicker) {
+      setShowKicker(true);
+    }
+  }, [interactive, scenarioIdx, showKicker, startInteractive, resetIdleTimer]);
+
+  // Handle tab click
+  const handleTabClick = useCallback((idx: number) => {
+    startInteractive(idx);
+    resetIdleTimer();
+  }, [startInteractive, resetIdleTimer]);
+
+  // Initial auto-play
   useEffect(() => {
     runScenario(0);
-    return clearTimeouts;
-  }, [runScenario, clearTimeouts]);
+    return () => {
+      clearTimeouts();
+      clearIdleTimer();
+    };
+  }, [runScenario, clearTimeouts, clearIdleTimer]);
 
   return (
     <div className="relative max-w-2xl mx-auto">
+      {/* Scenario selector tabs */}
+      <div className="flex gap-1 mb-4 px-1">
+        {TAB_LABELS.map((label, idx) => (
+          <button
+            key={label}
+            onClick={() => handleTabClick(idx)}
+            className="relative px-4 py-2 text-sm font-medium transition-colors rounded-t-lg focus:outline-none cursor-pointer"
+            style={{ color: scenarioIdx === idx ? "var(--color-kengo)" : "var(--color-text-secondary)" }}
+          >
+            {label}
+            {scenarioIdx === idx && (
+              <motion.div
+                layoutId="cascade-tab-underline"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-kengo rounded-full"
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
       <motion.div
         animate={{ opacity: transitioning ? 0 : 1 }}
         transition={{ duration: 0.35 }}
-        className="bg-surface border border-line rounded-2xl overflow-hidden"
+        className="bg-surface border border-line rounded-2xl overflow-hidden cursor-pointer select-none"
+        onClick={handleContainerClick}
       >
         <div className="p-5 sm:p-6 min-h-[380px] sm:min-h-[360px]">
           {/* Trigger */}
@@ -162,6 +256,21 @@ export default function CascadeDemo() {
             </div>
           </motion.div>
 
+          {/* "Click to continue" hint in interactive mode */}
+          <AnimatePresence>
+            {interactive && !showKicker && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="text-xs text-muted text-center mb-4 -mt-2"
+              >
+                Klick, um fortzufahren
+              </motion.p>
+            )}
+          </AnimatePresence>
+
           {/* Cascade steps */}
           <div className="relative pl-5 ml-2">
             {/* Animated vertical line */}
@@ -183,14 +292,15 @@ export default function CascadeDemo() {
                     <motion.div
                       initial={{ opacity: 0, x: -12 }}
                       animate={{ opacity: 1, x: 0 }}
+                      whileHover={{ scale: 1.02, backgroundColor: "rgba(59,130,246,0.05)" }}
                       transition={{
                         duration: 0.35,
                         ease: [0.22, 1, 0.36, 1],
                       }}
-                      className="relative flex items-start gap-3"
+                      className="relative flex items-start gap-3 rounded-lg p-1 -m-1"
                     >
                       {/* Node dot on the line */}
-                      <div className="absolute -left-5 top-1.5 w-[9px] h-[9px] rounded-full bg-surface border-2 border-kengo -translate-x-[4.5px]" />
+                      <div className="absolute -left-4 top-2.5 w-[9px] h-[9px] rounded-full bg-surface border-2 border-kengo -translate-x-[4.5px]" />
 
                       <div className="flex items-start gap-3 flex-1 min-w-0">
                         <span className="text-base flex-shrink-0 mt-0.5">{step.icon}</span>
@@ -241,6 +351,35 @@ export default function CascadeDemo() {
           </AnimatePresence>
         </div>
       </motion.div>
+
+      {/* Progress dots */}
+      <div className="flex items-center justify-center gap-2 mt-4">
+        {scenario.steps.map((_, i) => {
+          const isCompleted = visibleSteps >= i;
+          const isActive = visibleSteps === i && !showKicker;
+          return (
+            <motion.div
+              key={`dot-${scenarioIdx}-${i}`}
+              className="rounded-full"
+              style={{
+                width: 8,
+                height: 8,
+                backgroundColor: isCompleted ? "var(--color-kengo)" : "var(--color-line)",
+              }}
+              animate={
+                isActive
+                  ? { scale: [1, 1.3, 1] }
+                  : { scale: 1 }
+              }
+              transition={
+                isActive
+                  ? { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.2 }
+              }
+            />
+          );
+        })}
+      </div>
 
       {/* Subtle glow */}
       <div className="absolute -inset-4 -z-10 bg-kengo/[0.03] rounded-3xl blur-2xl" />
