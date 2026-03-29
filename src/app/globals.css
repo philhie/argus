@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-void text-text-primary font-sans;
+  }
+
+  ::selection {
+    @apply bg-kengo/30 text-white;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-kengo text-white font-semibold
+           px-6 py-3 rounded-xl text-base transition-all duration-150
+           hover:bg-kengo-light hover:scale-[1.02];
+  }
+
+  .btn-primary-lg {
+    @apply inline-flex items-center justify-center gap-2 bg-kengo text-white font-semibold
+           px-8 py-4 rounded-xl text-base transition-all duration-150
+           hover:bg-kengo-light hover:scale-[1.02];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent
+           border border-line text-text-primary font-medium
+           px-6 py-3 rounded-xl text-base transition-all duration-150
+           hover:border-kengo;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 bg-transparent text-text-secondary
+           px-4 py-2 transition-colors duration-150 hover:text-text-primary;
+  }
+
+  .btn-waitlist {
+    @apply inline-flex items-center justify-center gap-2
+           bg-amber/10 text-amber border border-amber/30
+           font-semibold px-6 py-3 rounded-xl text-base
+           transition-all duration-150 hover:bg-amber/20;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-surface border border-line rounded-2xl p-8
+           transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:border-kengo/50 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(59,130,246,0.08)];
+  }
+
+  .card-light {
+    @apply bg-light-surface border border-light-border rounded-2xl p-8;
+  }
+
+  /* Badges */
+  .badge-live {
+    @apply inline-flex items-center gap-1.5 bg-success/10 text-success
+           text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full;
+  }
+
+  .badge-waitlist {
+    @apply inline-flex items-center gap-1.5 bg-amber/10 text-amber
+           text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full;
+  }
+
+  .badge-vision {
+    @apply inline-flex items-center gap-1.5 bg-line text-muted
+           text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full;
+  }
+
+  /* Section spacing: mobile 64px → tablet 80px → desktop 120px */
+  .section-padding {
+    @apply py-16 px-6 sm:py-20 md:py-[120px];
+  }
+
+  .section-padding-sm {
+    @apply py-12 px-6 sm:py-16 md:py-20;
+  }
+}
+
+/* Hero gradient glow */
+.hero-glow {
+  background: radial-gradient(
+    ellipse 60% 50% at 70% 20%,
+    rgba(59, 130, 246, 0.10),
+    transparent 70%
+  );
+}
+
+/* Subtle grid pattern */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
