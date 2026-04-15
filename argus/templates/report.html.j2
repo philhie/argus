@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KENGO ARGUS — Sicherheitsbericht {{ result.domain }}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f6fa;
+    color: #333;
+    line-height: 1.6;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+  /* Header */
+  .header {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 40px 48px;
+    border-radius: 12px 12px 0 0;
+  }
+  .header .logo {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .header .logo span { color: #e94560; }
+  .header .subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #aaa;
+  }
+  .header .domain {
+    margin-top: 16px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .header .scan-date {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #999;
+  }
+
+  /* Card */
+  .card {
+    background: #fff;
+    padding: 32px 48px;
+    border-bottom: 1px solid #eee;
+  }
+  .card:last-of-type {
+    border-radius: 0 0 12px 12px;
+    border-bottom: none;
+  }
+  .card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e94560;
+    display: inline-block;
+  }
+
+  /* Executive Summary */
+  .score-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .score-circle .number { font-size: 48px; font-weight: 800; line-height: 1; }
+  .score-circle .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .score-green { background: #0f9b58; }
+  .score-orange { background: #f39c12; }
+  .score-red { background: #e74c3c; }
+
+  .severity-summary { display: flex; gap: 16px; flex-wrap: wrap; }
+  .severity-badge {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .sev-critical { background: #e74c3c; }
+  .sev-high { background: #e94560; }
+  .sev-medium { background: #f39c12; }
+  .sev-low { background: #3498db; }
+  .sev-info { background: #95a5a6; }
+
+  /* NIS2 Table */
+  .nis2-table { width: 100%; border-collapse: collapse; }
+  .nis2-table th, .nis2-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+  }
+  .nis2-table th {
+    background: #f5f6fa;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+  .traffic-light {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+  .tl-RED { background: #e74c3c; }
+  .tl-YELLOW { background: #f39c12; }
+  .tl-GREEN { background: #0f9b58; }
+  .tl-GRAY { background: #bbb; }
+
+  /* Narrative */
+  .narrative {
+    background: #f9f9fb;
+    border-left: 4px solid #e94560;
+    padding: 20px 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+  }
+
+  /* Tables */
+  .findings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .findings-table th, .findings-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  .findings-table th {
+    background: #f5f6fa;
+    font-weight: 600;
+    color: #1a1a2e;
+    white-space: nowrap;
+  }
+  .findings-table tr:hover { background: #fafbfe; }
+  .sev-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .sev-tag-KRITISCH { background: #e74c3c; }
+  .sev-tag-HOCH { background: #e94560; }
+  .sev-tag-MITTEL { background: #f39c12; }
+  .sev-tag-NIEDRIG { background: #3498db; }
+  .sev-tag-INFO { background: #95a5a6; }
+
+  .evidence-cell {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Tech list */
+  .tech-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tech-list li {
+    background: #eef0f7;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a2e;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: #999;
+  }
+
+  @media print {
+    body { background: #fff; }
+    .container { padding: 0; }
+    .header { border-radius: 0; }
+    .card:last-of-type { border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 1. Header -->
+  <div class="header">
+    <div class="logo">KENGO <span>ARGUS</span></div>
+    <div class="subtitle">Externe Sicherheitsanalyse — Passive Reconnaissance</div>
+    <div class="domain">{{ result.domain }}</div>
+    {% if result.company_name and result.company_name != result.domain %}
+    <div class="scan-date">{{ result.company_name }}</div>
+    {% endif %}
+    <div class="scan-date">Scan vom {{ result.scan_timestamp[:10] }}
+      {%- if result.scan_duration_seconds %} &middot; Dauer: {{ result.scan_duration_seconds }}s{% endif %}</div>
+  </div>
+
+  <!-- 2. Executive Summary -->
+  <div class="card">
+    <h2>Zusammenfassung</h2>
+    <div class="score-container">
+      {% if result.exposure_score < 40 %}
+      <div class="score-circle score-green">
+      {% elif result.exposure_score < 70 %}
+      <div class="score-circle score-orange">
+      {% else %}
+      <div class="score-circle score-red">
+      {% endif %}
+        <div class="number">{{ result.exposure_score }}</div>
+        <div class="label">Exposure Score</div>
+      </div>
+      <div>
+        <div class="severity-summary">
+          {% set counts = namespace(critical=0, high=0, medium=0, low=0, info=0) %}
+          {% for f in result.findings %}
+            {% if f.severity.value == "KRITISCH" %}{% set counts.critical = counts.critical + 1 %}
+            {% elif f.severity.value == "HOCH" %}{% set counts.high = counts.high + 1 %}
+            {% elif f.severity.value == "MITTEL" %}{% set counts.medium = counts.medium + 1 %}
+            {% elif f.severity.value == "NIEDRIG" %}{% set counts.low = counts.low + 1 %}
+            {% else %}{% set counts.info = counts.info + 1 %}
+            {% endif %}
+          {% endfor %}
+          {% if counts.critical > 0 %}
+          <span class="severity-badge sev-critical">{{ counts.critical }} Kritisch</span>
+          {% endif %}
+          {% if counts.high > 0 %}
+          <span class="severity-badge sev-high">{{ counts.high }} Hoch</span>
+          {% endif %}
+          {% if counts.medium > 0 %}
+          <span class="severity-badge sev-medium">{{ counts.medium }} Mittel</span>
+          {% endif %}
+          {% if counts.low > 0 %}
+          <span class="severity-badge sev-low">{{ counts.low }} Niedrig</span>
+          {% endif %}
+          {% if counts.info > 0 %}
+          <span class="severity-badge sev-info">{{ counts.info }} Info</span>
+          {% endif %}
+        </div>
+        <p style="margin-top: 16px; font-size: 14px; color: #666;">
+          Insgesamt <strong>{{ result.findings | length }}</strong> Befunde aus der passiven Analyse von <strong>{{ result.domain }}</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. NIS2 Compliance -->
+  {% if nis2 %}
+  <div class="card">
+    <h2>NIS2 Konformit&auml;t &mdash; &sect;30 BSI-Gesetz</h2>
+    <table class="nis2-table">
+      <thead>
+        <tr>
+          <th style="width:50px;">Status</th>
+          <th>Paragraph</th>
+          <th>Anforderung</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set paragraph_titles = {
+          "§30 Abs. 2 Nr. 1": "Risikoanalyse und Sicherheitskonzepte",
+          "§30 Abs. 2 Nr. 2": "Bewältigung von Sicherheitsvorfällen",
+          "§30 Abs. 2 Nr. 3": "Aufrechterhaltung des Betriebs",
+          "§30 Abs. 2 Nr. 4": "Sicherheit der Lieferkette",
+          "§30 Abs. 2 Nr. 5": "Sicherheitsmaßnahmen bei Erwerb, Entwicklung und Wartung",
+          "§30 Abs. 2 Nr. 6": "Bewertung der Wirksamkeit von Risikomanagementmaßnahmen",
+          "§30 Abs. 2 Nr. 7": "Cyberhygiene und Schulungen",
+          "§30 Abs. 2 Nr. 8": "Kryptografie und Verschlüsselung",
+          "§30 Abs. 2 Nr. 9": "Zugangskontrollen und Asset Management",
+          "§30 Abs. 2 Nr. 10": "Multi-Faktor-Authentifizierung und sichere Kommunikation"
+        } %}
+        {% for para in [
+          "§30 Abs. 2 Nr. 1", "§30 Abs. 2 Nr. 2", "§30 Abs. 2 Nr. 3",
+          "§30 Abs. 2 Nr. 4", "§30 Abs. 2 Nr. 5", "§30 Abs. 2 Nr. 6",
+          "§30 Abs. 2 Nr. 7", "§30 Abs. 2 Nr. 8", "§30 Abs. 2 Nr. 9",
+          "§30 Abs. 2 Nr. 10"
+        ] %}
+        <tr>
+          <td><span class="traffic-light tl-{{ nis2.get(para, 'GRAY') }}"></span></td>
+          <td>{{ para }}</td>
+          <td>{{ paragraph_titles[para] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- 4. Attack Path Narrative -->
+  {% if result.attack_path_narrative %}
+  <div class="card">
+    <h2>Angriffspfad-Analyse</h2>
+    <div class="narrative">{{ result.attack_path_narrative }}</div>
+  </div>
+  {% endif %}
+
+  <!-- 5. Critical Findings -->
+  {% set critical_findings = [] %}
+  {% for f in result.findings %}
+    {% if f.severity.value in ["KRITISCH", "HOCH"] %}
+      {% set _ = critical_findings.append(f) %}
+    {% endif %}
+  {% endfor %}
+  {% if critical_findings %}
+  <div class="card">
+    <h2>Kritische Befunde</h2>
+    <table class="findings-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Titel</th>
+          <th>Schweregrad</th>
+          <th>Evidenz</th>
+          <th>Empfehlung</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in critical_findings %}
+        <tr>
+          <td style="white-space:nowrap;">{{ f.id }}</td>
+          <td>{{ f.title }}</td>
+          <td><span class="sev-tag sev-tag-{{ f.severity.value }}">{{ f.severity.value }}</span></td>
+          <td class="evidence-cell" title="{{ f.evidence }}">{{ f.evidence[:120] }}{% if f.evidence|length > 120 %}&hellip;{% endif %}</td>
+          <td>{{ f.remediation[:200] }}{% if f.remediation|length > 200 %}&hellip;{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- 6. All Findings -->
+  {% if result.findings %}
+  <div class="card">
+    <h2>Alle Befunde</h2>
+    {% set severity_order = {"KRITISCH": 0, "HOCH": 1, "MITTEL": 2, "NIEDRIG": 3, "INFO": 4} %}
+    <table class="findings-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Modul</th>
+          <th>Titel</th>
+          <th>Schweregrad</th>
+          <th>Evidenz</th>
+          <th>Empfehlung</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in result.findings %}
+        <tr>
+          <td style="white-space:nowrap;">{{ f.id }}</td>
+          <td style="white-space:nowrap;">{{ f.module }}</td>
+          <td>{{ f.title }}</td>
+          <td><span class="sev-tag sev-tag-{{ f.severity.value }}">{{ f.severity.value }}</span></td>
+          <td class="evidence-cell" title="{{ f.evidence }}">{{ f.evidence[:120] }}{% if f.evidence|length > 120 %}&hellip;{% endif %}</td>
+          <td>{{ f.remediation[:200] }}{% if f.remediation|length > 200 %}&hellip;{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- 7. Technology Stack -->
+  {% if result.technologies %}
+  <div class="card">
+    <h2>Erkannte Technologien</h2>
+    <ul class="tech-list">
+      {% for tech in result.technologies %}
+      <li>
+        {% if tech is mapping %}
+          {{ tech.get("name", tech.get("service", tech | string)) }}
+          {% if tech.get("version") %} ({{ tech.version }}){% endif %}
+        {% else %}
+          {{ tech }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+</div><!-- container -->
+
+<!-- 8. Footer -->
+<div class="footer">
+  Generiert von KENGO ARGUS &mdash; {{ result.scan_timestamp[:10] }}<br>
+  Dieser Bericht basiert ausschlie&szlig;lich auf passiver, externer Analyse. Kein System wurde aktiv angegriffen.
+</div>
+
+</body>
+</html>

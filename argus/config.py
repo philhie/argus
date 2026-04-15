@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # Module toggles (legal sensitivity)
     enable_axfr: bool = True  # Zone transfer test — set False if concerned about legality
     enable_ntlm: bool = True  # NTLM challenge — set False to skip AD domain extraction
+    enable_subdomain_bruteforce: bool = True  # DNS brute force for subdomain discovery
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
