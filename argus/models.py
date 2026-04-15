@@ -111,6 +111,7 @@ class ScanContext(BaseModel):
 
     # Accumulated across phases
     discovered_ips: set[str] = Field(default_factory=set)
+    cloud_providers: dict[str, str] = Field(default_factory=dict)  # IP → provider
     mx_hosts: list[str] = Field(default_factory=list)
     live_urls: list[str] = Field(default_factory=list)
     findings: list[Finding] = Field(default_factory=list)

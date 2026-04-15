@@ -2,11 +2,11 @@
 
 Automated passive reconnaissance engine for German Mittelstand cybersecurity. Scans company domains from the outside to find specific, verifiable vulnerabilities that drive outbound sales.
 
-28 modules. 100+ finding types. Zero interaction required.
+32 modules. 100+ finding types. Zero interaction required.
 
 ## What it does
 
-Point it at a domain. It runs 28 passive recon modules across 10 steps, produces an exposure score (0-100), maps findings to NIS2 compliance, generates a German-language attack narrative, and outputs an HTML report + Instantly-ready CSV.
+Point it at a domain. It runs 32 passive recon modules across 10 steps, produces an exposure score (0-100), maps findings to NIS2 compliance, generates a German-language attack narrative, and outputs an HTML report + Instantly-ready CSV.
 
 ```bash
 python -m argus scan --domain true-fruits.com --company "true fruits"
@@ -18,8 +18,8 @@ Example output: 36 findings, score 44/100, 8 critical, 5 technologies detected, 
 
 | Step | Modules | What they find |
 |------|---------|---------------|
-| 1 | DNS Intel, DNSSEC, CAA, WHOIS, Zone Transfer | SPF/DMARC/DKIM gaps, email security, domain hygiene |
-| 2 | HTTP Headers, File Exposure, CORS, Source Maps | Missing security headers, exposed .env/.git, CORS misconfig |
+| 1 | DNS Intel, DNSSEC, CAA, WHOIS, Zone Transfer, IP Cloud Provider | SPF/DMARC/DKIM gaps, email security, domain hygiene, cloud provider mapping |
+| 2 | HTTP Headers, File Exposure, CORS, Source Maps, TLS Analysis, Admin Panel, API Discovery | Missing security headers, exposed .env/.git, CORS misconfig, weak TLS, admin panels, API docs |
 | 3 | Exchange/NTLM, Certificate SANs | AD domain leak, internal hostnames, Exchange EOL |
 | 4 | Shodan (InternetDB), Favicon Hash | Open ports, CVEs, hidden infrastructure |
 | 5 | Ownership, Subdomain Discovery, Subdomain Takeover | Impressum parsing, crt.sh + DNS brute force, dangling CNAMEs |
@@ -90,9 +90,10 @@ argus/
 ├── modules/
 │   ├── base.py                         # BaseModule ABC
 │   ├── __init__.py                     # @register decorator + auto-discovery
-│   ├── dns_intel.py                    # Step 1: SPF/DMARC/DKIM/MTA-STS/DANE/BIMI
+│   ├── dns_intel.py, ip_cloud_provider.py  # Step 1: DNS + cloud provider mapping
 │   ├── dnssec.py, caa.py, whois_check.py, zone_transfer.py  # Step 1
 │   ├── http_headers.py, file_exposure.py, cors.py, source_maps.py  # Step 2
+│   ├── tls_analysis.py, admin_panel.py, api_discovery.py  # Step 2
 │   ├── exchange.py, cert_san.py        # Step 3
 │   ├── shodan_lookup.py, favicon_hash.py  # Step 4
 │   ├── ownership.py, subdomain_discovery.py, subdomain_takeover.py  # Step 5
@@ -102,7 +103,7 @@ argus/
 │   ├── tech_fingerprint.py, graphql_introspection.py  # Step 9
 │   ├── msp_identification.py, supply_chain.py  # Step 9
 │   ├── attack_path.py, nis2_mapping.py, report_gen.py  # Step 10
-│   └── (28 modules total)
+│   └── (32 modules total)
 └── templates/
     └── report.html.j2                  # HTML report template
 ```

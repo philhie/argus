@@ -2,6 +2,23 @@
 
 All notable changes to KENGO ARGUS will be documented in this file.
 
+## [0.3.0.0] - 2026-04-15
+
+### Added
+- **M03: IP Resolution & Cloud Provider** — maps discovered IPs to AWS, Azure, Google Cloud, Hetzner, IONOS, OVH, Strato, Oracle Cloud, DigitalOcean, Cloudflare using CIDR ranges with reverse DNS fallback. Stores provider mapping in ScanContext for downstream modules.
+- **M06: TLS Analysis** — probes TLS 1.0/1.1/1.3 support and detects weak cipher suites (RC4, DES, 3DES/SWEET32, NULL, EXPORT). Checks domain, MX hosts, and subdomains. Complements cert_san.py (which handles SANs, expiry, self-signed).
+- **M10: Admin Panel Discovery** — enumerates 18 common admin paths (WordPress, TYPO3, Joomla, Drupal, phpMyAdmin, Adminer, cPanel, Plesk) with soft-404 detection. 403 responses reported at INFO severity (confirms path exists).
+- **M11: API Endpoint Discovery** — probes 21 API documentation and health endpoints (Swagger/OpenAPI variants, ReDoc, Spring Actuator, REST APIs). Content marker validation prevents false positives. Actuator sensitive endpoints (env, beans, configprops) escalated to HIGH severity.
+- `cloud_providers` field on ScanContext for IP-to-provider mapping
+- Unit tests for all 4 new modules (58 new tests, 96 total)
+- Scanner now registers 32 modules (was 28)
+
+### Technical Notes
+- CIDR ranges sorted by prefix length (most specific first) to prevent misclassification of overlapping ranges
+- M10 excludes paths already in file_exposure.py (/server-status, /server-info)
+- M11 excludes paths already in file_exposure.py (/swagger, /swagger-ui, /api-docs) and graphql_introspection.py (/graphql, /graphiql)
+- TLS 1.0/1.1 probing requires OpenSSL (LibreSSL on macOS has removed support — module degrades gracefully)
+
 ## [0.2.0.0] - 2026-04-15
 
 ### Added
