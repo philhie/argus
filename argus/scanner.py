@@ -14,11 +14,20 @@ from argus.modules import get_modules_up_to_step
 from argus.scoring import calculate_exposure_score
 
 # Import all modules so they register themselves
+# Step 1: DNS
 import argus.modules.dns_intel  # noqa: F401
 import argus.modules.zone_transfer  # noqa: F401
 import argus.modules.dnssec  # noqa: F401
 import argus.modules.caa  # noqa: F401
 import argus.modules.whois_check  # noqa: F401
+# Step 2: HTTP
+import argus.modules.http_headers  # noqa: F401
+import argus.modules.file_exposure  # noqa: F401
+import argus.modules.cors  # noqa: F401
+import argus.modules.source_maps  # noqa: F401
+# Step 3: Exchange & Certs
+import argus.modules.exchange  # noqa: F401
+import argus.modules.cert_san  # noqa: F401
 
 logger = logging.getLogger("argus")
 
