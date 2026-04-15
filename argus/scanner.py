@@ -13,21 +13,15 @@ from argus.models import ScanContext, ScanResult, Severity
 from argus.modules import get_modules_up_to_step
 from argus.scoring import calculate_exposure_score
 
-# Import all modules so they register themselves
-# Step 1: DNS
-import argus.modules.dns_intel  # noqa: F401
-import argus.modules.zone_transfer  # noqa: F401
-import argus.modules.dnssec  # noqa: F401
-import argus.modules.caa  # noqa: F401
-import argus.modules.whois_check  # noqa: F401
-# Step 2: HTTP
-import argus.modules.http_headers  # noqa: F401
-import argus.modules.file_exposure  # noqa: F401
-import argus.modules.cors  # noqa: F401
-import argus.modules.source_maps  # noqa: F401
-# Step 3: Exchange & Certs
-import argus.modules.exchange  # noqa: F401
-import argus.modules.cert_san  # noqa: F401
+# Auto-discover and import all modules so they register themselves
+import importlib
+import pkgutil
+
+import argus.modules as _modules_pkg
+
+for _importer, _modname, _ispkg in pkgutil.iter_modules(_modules_pkg.__path__):
+    if _modname not in ("base", "__init__"):
+        importlib.import_module(f"argus.modules.{_modname}")
 
 logger = logging.getLogger("argus")
 

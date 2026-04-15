@@ -118,10 +118,13 @@ def analyze_certificate(hostname: str, port: int = 443) -> tuple[dict[str, Any],
 
     # --- Generate Findings ---
 
+    # Use hostname prefix to avoid duplicate IDs across multiple hosts
+    host_short = hostname.split(".")[0][:8]
+
     if info["internal_names"]:
         names = ", ".join(info["internal_names"])
         findings.append(Finding(
-            id="CERT-001",
+            id=f"CERT-001-{host_short}",
             module="cert_san",
             category="infrastructure",
             title=f"Interne Hostnamen in TLS-Zertifikat geleakt",
@@ -139,7 +142,7 @@ def analyze_certificate(hostname: str, port: int = 443) -> tuple[dict[str, Any],
     if info["private_ips"]:
         ips = ", ".join(info["private_ips"])
         findings.append(Finding(
-            id="CERT-002",
+            id=f"CERT-002-{host_short}",
             module="cert_san",
             category="infrastructure",
             title="Private IP-Adressen in TLS-Zertifikat geleakt",
@@ -151,7 +154,7 @@ def analyze_certificate(hostname: str, port: int = 443) -> tuple[dict[str, Any],
 
     if info["is_self_signed"]:
         findings.append(Finding(
-            id="CERT-004",
+            id=f"CERT-004-{host_short}",
             module="cert_san",
             category="infrastructure",
             title="Self-Signed Zertifikat auf Production-Server",
@@ -164,7 +167,7 @@ def analyze_certificate(hostname: str, port: int = 443) -> tuple[dict[str, Any],
     if info["days_until_expiry"] is not None and info["days_until_expiry"] < 30:
         severity = Severity.HIGH if info["days_until_expiry"] < 7 else Severity.MEDIUM
         findings.append(Finding(
-            id="CERT-005",
+            id=f"CERT-005-{host_short}",
             module="cert_san",
             category="infrastructure",
             title=f"TLS-Zertifikat läuft in {info['days_until_expiry']} Tagen ab",

@@ -28,7 +28,7 @@ SECURITY_HEADERS = {
             "abfangen (Man-in-the-Middle)."
         ),
         "remediation": "HSTS-Header setzen: Strict-Transport-Security: max-age=31536000; includeSubDomains",
-        "check": lambda v: "max-age=" in v and int(re.search(r'max-age=(\d+)', v).group(1)) >= 31536000,
+        "check": lambda v: bool(re.search(r'max-age=(\d+)', v)) and int(re.search(r'max-age=(\d+)', v).group(1)) >= 31536000,
         "weak_title": "HSTS max-age zu kurz (< 1 Jahr)",
         "weak_severity": Severity.LOW,
     },
@@ -149,21 +149,17 @@ def check_headers(url: str) -> list[Finding]:
                 remediation=f"'{header_name}' Header in der Serverkonfiguration entfernen.",
             ))
 
-    # Check cookies
-    for cookie_str in headers.get("Set-Cookie", "").split(","):
-        cookie_str = cookie_str.strip()
-        if not cookie_str:
-            continue
-        cookie_name = cookie_str.split("=")[0].strip() if "=" in cookie_str else "unknown"
-
-        if "Secure" not in cookie_str:
+    # Check cookies (use resp.cookies to avoid comma-splitting issues with Expires dates)
+    for cookie in resp.cookies:
+        cookie_attrs = resp.headers.get("Set-Cookie", "")
+        if not cookie.secure:
             findings.append(Finding(
                 id="HDR-COOKIE-001",
                 module="http_headers",
                 category="web_application",
-                title=f"Cookie '{cookie_name}' ohne Secure-Flag",
+                title=f"Cookie '{cookie.name}' ohne Secure-Flag",
                 severity=Severity.MEDIUM,
-                evidence=f"Set-Cookie: {cookie_str[:100]}",
+                evidence=f"Cookie '{cookie.name}' wird ohne Secure-Flag gesetzt",
                 nis2_paragraphs=["§30 Abs. 2 Nr. 8"],
                 remediation="Secure-Flag für alle Cookies setzen.",
             ))

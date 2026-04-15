@@ -21,6 +21,9 @@ DKIM_SELECTORS = [
     "default", "selector1", "selector2", "google", "mail",
     "k1", "k2", "k3", "s1", "s2", "dkim", "mandrill",
     "mailjet", "cm", "mxvault", "exchange", "ex1", "ex2",
+    # German ESPs
+    "brevo", "rapidmail", "cleverreach", "newsletter",
+    "sendinblue", "mailgun", "postmark",
 ]
 
 # Known mail providers by MX hostname patterns
@@ -286,11 +289,12 @@ def scan_dns(domain: str) -> tuple[DNSResult, list[Finding]]:
             id="DNS-003",
             module="dns_intel",
             category="email_security",
-            title="Kein DKIM konfiguriert",
+            title="Kein DKIM unter getesteten Selektoren gefunden",
             description=(
                 f"Keiner der {len(DKIM_SELECTORS)} getesteten DKIM-Selektoren hat "
                 f"einen gültigen Record. Ohne DKIM können E-Mails nicht kryptografisch "
-                f"verifiziert werden und DMARC-Alignment schlägt fehl."
+                f"verifiziert werden und DMARC-Alignment schlägt fehl. "
+                f"Hinweis: Es ist möglich, dass ein nicht-standardmäßiger Selektor verwendet wird."
             ),
             severity=Severity.HIGH,
             evidence=(

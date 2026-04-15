@@ -103,8 +103,10 @@ def check_file_exposures(base_url: str) -> list[Finding]:
                 if has_creds and severity not in (Severity.CRITICAL,):
                     severity = Severity.CRITICAL
 
+                # Use full path slug for unique ID
+                path_slug = check['path'].lstrip('/').replace('/', '-').replace('.', '')[:20].upper()
                 findings.append(Finding(
-                    id=f"FILE-{check['path'].replace('/', '').replace('.', '')[:12].upper()}",
+                    id=f"FILE-{path_slug}",
                     module="file_exposure",
                     category="web_application",
                     title=f"Sensible Datei öffentlich zugänglich: {check['path']}",

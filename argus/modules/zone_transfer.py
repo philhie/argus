@@ -49,6 +49,11 @@ class ZoneTransferModule(BaseModule):
     step = 1
 
     def scan(self, domain: str, context: ScanContext) -> list[Finding]:
+        from argus.config import settings
+        if not settings.enable_axfr:
+            logger.debug("AXFR test disabled via config")
+            return []
+
         ns_records = context.dns.ns_records
         if not ns_records:
             logger.info("No NS records available, skipping zone transfer test")

@@ -13,15 +13,14 @@ import logging
 import struct
 from typing import Any, Optional
 
+import warnings
+
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import urllib3
 
 from argus.models import Finding, ScanContext, Severity
 from argus.modules import register
 from argus.modules.base import BaseModule
-
-# Suppress SSL warnings for Exchange servers with self-signed certs
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 logger = logging.getLogger("argus.exchange")
 
@@ -115,6 +114,16 @@ def _decode_ntlm_type2(data: bytes) -> dict[str, str]:
     return result
 
 
+def _exchange_get(url: str, **kwargs) -> requests.Response:
+    """HTTP GET with SSL verification disabled and warnings suppressed (Exchange only)."""
+    kwargs.setdefault("timeout", 10)
+    kwargs.setdefault("verify", False)
+    kwargs.setdefault("allow_redirects", False)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=urllib3.exceptions.InsecureRequestWarning)
+        return requests.get(url, **kwargs)
+
+
 def _map_exchange_version(version: str) -> tuple[Optional[str], bool]:
     """Map version string to name and EOL status."""
     for prefix, info in EXCHANGE_VERSIONS.items():
@@ -124,7 +133,11 @@ def _map_exchange_version(version: str) -> tuple[Optional[str], bool]:
 
 
 def scan_exchange(mail_host: str) -> tuple[dict[str, Any], list[Finding]]:
-    """Scan a potential Exchange server. Returns (exchange_info, findings)."""
+    """Scan a potential Exchange server. Returns (exchange_info, findings).
+
+    SSL verification is disabled for Exchange servers (self-signed certs are common).
+    Warnings are suppressed only within this function scope.
+    """
     info: dict[str, Any] = {
         "is_exchange": False,
         "host": mail_host,
@@ -145,9 +158,7 @@ def scan_exchange(mail_host: str) -> tuple[dict[str, Any], list[Finding]]:
     for endpoint in EXCHANGE_ENDPOINTS:
         url = f"{base_url}{endpoint}"
         try:
-            resp = requests.get(
-                url, timeout=10, allow_redirects=False, verify=False
-            )
+            resp = _exchange_get(url)
             if resp.status_code in (200, 301, 302, 401, 403):
                 info["is_exchange"] = True
                 info["endpoints_exposed"].append(endpoint)
@@ -181,19 +192,19 @@ def scan_exchange(mail_host: str) -> tuple[dict[str, Any], list[Finding]]:
         return info, findings
 
     # --- NTLM Challenge ---
+    from argus.config import settings
     ntlm_endpoint = None
-    for ep, methods in info["auth_methods"].items():
-        if "NTLM" in methods:
-            ntlm_endpoint = ep
-            break
+    if settings.enable_ntlm:
+        for ep, methods in info["auth_methods"].items():
+            if "NTLM" in methods:
+                ntlm_endpoint = ep
+                break
 
     if ntlm_endpoint:
         try:
-            resp = requests.get(
+            resp = _exchange_get(
                 f"{base_url}{ntlm_endpoint}",
                 headers={"Authorization": f"NTLM {NTLM_TYPE1}"},
-                timeout=10,
-                verify=False,
             )
             www_auth = resp.headers.get("WWW-Authenticate", "")
             if "NTLM " in www_auth:
