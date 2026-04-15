@@ -96,6 +96,9 @@ def scan_domain(
         top_finding_3=top_3,
         personalization_block=personalization_block,
         subject_line=subject_line,
+        technologies=context.technologies,
+        attack_path_narrative=context.attack_path_narrative,
+        nis2_compliance=context.nis2_compliance,
     )
 
     return result

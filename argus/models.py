@@ -115,6 +115,17 @@ class ScanContext(BaseModel):
     live_urls: list[str] = Field(default_factory=list)
     findings: list[Finding] = Field(default_factory=list)
 
+    # Steps 4-10 enrichment
+    subdomains: list[str] = Field(default_factory=list)
+    shodan_hosts: list[dict[str, Any]] = Field(default_factory=list)
+    employee_emails: list[str] = Field(default_factory=list)
+    technologies: list[dict[str, Any]] = Field(default_factory=list)
+    msp_info: dict[str, Any] = Field(default_factory=dict)
+    supply_chain_entries: list[dict[str, Any]] = Field(default_factory=list)
+    ownership_info: dict[str, Any] = Field(default_factory=dict)
+    attack_path_narrative: str = ""
+    nis2_compliance: dict[str, str] = Field(default_factory=dict)
+
     model_config = {"arbitrary_types_allowed": True}
 
 
@@ -154,3 +165,8 @@ class ScanResult(BaseModel):
     top_finding_3: str = ""
     personalization_block: str = ""
     subject_line: str = ""
+
+    # Steps 4-10 enrichment
+    technologies: list[dict[str, Any]] = Field(default_factory=list)
+    attack_path_narrative: str = ""
+    nis2_compliance: dict[str, str] = Field(default_factory=dict)

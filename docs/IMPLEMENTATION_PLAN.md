@@ -8,7 +8,7 @@ The workspace is empty. We’re building from scratch based on the KENGO_ARGUS_F
 
 Project Structure
 
-semarang/
+buffalo-v1/
 ├── argus/
 │   ├── __init__.py
 │   ├── __main__.py              # CLI entry point
@@ -31,29 +31,25 @@ semarang/
 │   │   ├── source_maps.py       # M30: JS source map exposure
 │   │   ├── exchange.py          # M08: Exchange detection + NTLM challenge
 │   │   ├── cert_san.py          # M25: Certificate SAN analysis
-│   │   ├── shodan_lookup.py     # M04: Ports/versions/CVEs
-│   │   ├── favicon_hash.py      # M27: Favicon hash → Shodan
-│   │   ├── subdomains.py        # M02: crt.sh + DNS brute
-│   │   ├── subdomain_takeover.py# M31: Dangling CNAME detection
-│   │   ├── hibp.py              # M12: Credential exposure
-│   │   ├── github_secrets.py    # M29: GitHub/GitLab secret scanning
-│   │   ├── wayback.py           # M30: Wayback Machine historical exposure
-│   │   ├── google_dorks.py      # M23: Google dorking via SerpAPI
+│   │   ├── shodan_lookup.py     # M04: InternetDB (free) + Shodan API (enrichment)
+│   │   ├── favicon_hash.py      # M27: Favicon hash → Shodan search
+│   │   ├── subdomain_discovery.py  # M02: crt.sh + DNS brute force
+│   │   ├── subdomain_takeover.py   # M31: Dangling CNAME detection
+│   │   ├── ownership.py         # M15: Impressum/company structure
+│   │   ├── credential_exposure.py  # M12: HIBP credential checks
+│   │   ├── github_secrets.py    # M20: GitHub secret scanning
+│   │   ├── wayback_machine.py   # M21: Wayback Machine historical exposure
+│   │   ├── google_dorking.py    # M23: Google dorking via SerpAPI
 │   │   ├── cloud_buckets.py     # M33: S3/Azure/GCS bucket discovery
-│   │   ├── tech_fingerprint.py  # M07: Technology detection
-│   │   ├── graphql.py           # M29: GraphQL introspection
-│   │   ├── msp.py               # M13: MSP identification & scoring
-│   │   ├── supply_chain.py      # M14: Third-party mapping
-│   │   ├── ownership.py         # M15: Company structure
-│   │   ├── attack_path.py       # M17: LLM-generated kill chain
-│   │   ├── nis2_mapping.py      # M18: NIS2 §30 compliance
-│   │   └── report_gen.py        # M19: HTML report + email generation
-│   └── data/
-│       ├── exchange_versions.json
-│       ├── takeover_signatures.json
-│       ├── cloud_ip_ranges.json
-│       ├── dkim_selectors.json
-│       └── file_checks.json
+│   │   ├── tech_fingerprint.py  # M07: Wappalyzer-style tech detection
+│   │   ├── graphql_introspection.py  # M29: GraphQL schema exposure
+│   │   ├── msp_identification.py    # M13: MSP identification
+│   │   ├── supply_chain.py      # M14: Third-party service mapping
+│   │   ├── attack_path.py       # M17: LLM-generated attack narrative
+│   │   ├── nis2_mapping.py      # M18: NIS2 §30 compliance mapping
+│   │   └── report_gen.py        # M19: HTML report + CSV generation
+│   └── templates/
+│       └── report.html.j2       # Jinja2 HTML report template
 ├── tests/
 │   ├── __init__.py
 │   ├── test_dns_intel.py
@@ -63,7 +59,9 @@ semarang/
 ├── .env.example                 # Template for API keys
 ├── .gitignore
 ├── pyproject.toml               # Project config + dependencies
-└── README.md
+├── README.md
+├── CHANGELOG.md
+└── VERSION
 Architecture Decisions
 
 1. Module interface
