@@ -58,6 +58,18 @@ def build_template_key(finding: dict) -> Optional[str]:
             return "shodan:ssh"
         if "Telnet" in title:
             return "shodan:telnet"
+        if "SMB" in title:
+            return "shodan:smb"
+        if "MSSQL" in title or "MS-SQL" in title:
+            return "shodan:mssql"
+        if "VNC" in title:
+            return "shodan:vnc"
+        if "Elasticsearch" in title:
+            return "shodan:elasticsearch"
+        if "Memcached" in title:
+            return "shodan:memcached"
+        if fid == "SHO-003" or "Betriebssystem" in title:
+            return "shodan:outdated_os"
         if fid == "SHO-002" or fid == "SHO-002-AGG":
             return "shodan:cve"
         if fid == "SHO-004":
@@ -73,6 +85,10 @@ def build_template_key(finding: dict) -> Optional[str]:
             return "exchange:basic_auth"
         if fid == "EX-001":
             return "exchange:eol"
+        if fid == "EX-007":
+            return "exchange:ad_domain_leak"
+        if fid == "EX-008":
+            return "exchange:fqdn_leak"
         if fid == "EX-009":
             return "exchange:hostname_leak"
 
@@ -116,13 +132,27 @@ def build_template_key(finding: dict) -> Optional[str]:
             return "email:no_dkim"
         if fid == "DNS-005":
             return "email:dmarc_subdomain_none"
+        if fid == "DNS-007":
+            return "email:no_mta_sts"
+        if fid == "DNS-008":
+            return "email:no_dane"
+        if fid == "DNS-010":
+            return "email:spf_too_many_lookups"
+
+    # ── Zone transfer (own module) ────────────────────────────────────
+    if module == "zone_transfer" or fid == "DNS-AXFR":
+        return "email:zone_transfer"
 
     # ── Credentials / HIBP ────────────────────────────────────────────
     if module == "credential_exposure":
+        if fid.startswith("CRED-004"):
+            return "cred:hibp_gf"
         if fid.startswith("CRED-001"):
             return "cred:hibp_password"
         if fid.startswith("CRED-005"):
             return "cred:hibp_multiple"
+        if fid.startswith("CRED-002"):
+            return "cred:hibp_recent"
         if fid.startswith("CRED-003"):
             return "cred:hibp_metadata"
 
@@ -184,6 +214,27 @@ def build_template_key(finding: dict) -> Optional[str]:
     if module == "tech_fingerprint":
         if fid == "TECH-001":
             return "tech:outdated"
+        if fid == "TECH-002":
+            return "tech:version_leak"
+
+    # ── Wayback Machine ───────────────────────────────────────────────
+    if module == "wayback_machine":
+        if fid == "WB-001":
+            return "wayback:live_sensitive"
+        if fid == "WB-002":
+            return "wayback:archived_sensitive"
+        if fid == "WB-003":
+            return "wayback:many_sensitive"
+
+    # ── HTTP headers (cookie issues) ──────────────────────────────────
+    if module == "http_headers":
+        if fid.startswith("HDR-COOKIE"):
+            return "cookie:insecure"
+
+    # ── Cloud buckets ─────────────────────────────────────────────────
+    if module == "cloud_buckets":
+        if fid == "CLOUD-001":
+            return "cloud:public_bucket"
 
     # ── GitHub (post-filter only) ─────────────────────────────────────
     if module == "github_secrets":

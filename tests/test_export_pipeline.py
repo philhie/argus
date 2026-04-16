@@ -189,6 +189,72 @@ def test_pipeline_runs_with_empty_scans_directory(tmp_path):
         assert f.readline().strip().startswith('"email"')
 
 
+def test_pipeline_skips_leads_with_no_email(tmp_path):
+    """Leads with empty/malformed emails must be counted separately so
+    they don't silently corrupt Instantly uploads with blank sender rows."""
+    scans = tmp_path / "scans"
+    scans.mkdir()
+    scans.joinpath("x.com.json").write_text(json.dumps({
+        "domain": "x.com",
+        "company_name": "X GmbH",
+        "findings": [{
+            "id": "SHO-001", "module": "shodan_lookup",
+            "category": "infrastructure", "severity": "KRITISCH",
+            "title": "MySQL offen", "evidence": "IP 1.1.1.1", "cve_ids": [],
+        }],
+    }), encoding="utf-8")
+
+    leads = tmp_path / "leads.csv"
+    leads.write_text(
+        "email,company_domain\n"
+        ",x.com\n"  # no email
+        "not-an-email,x.com\n"  # missing @
+        "real@x.com,x.com\n",  # valid
+        encoding="utf-8",
+    )
+
+    stats = run_export_pipeline(
+        leads_path=leads, scans_dir=scans,
+        output_path=tmp_path / "out.csv", strict=True,
+    )
+    assert stats["no_email"] == 2
+    assert stats["written"] == 1
+
+
+def test_pipeline_uses_lead_company_name_when_scan_missing_it(tmp_path):
+    """When the scan didn't capture company_name, the GitHub filter still
+    needs to validate ownership — fall back to the lead's Apollo name so
+    legitimate GitHub findings aren't silently dropped."""
+    scans = tmp_path / "scans"
+    scans.mkdir()
+    scans.joinpath("acme.com.json").write_text(json.dumps({
+        "domain": "acme.com",
+        "company_name": "",  # scanner couldn't determine
+        "findings": [
+            {
+                "id": "GH-001", "module": "github_secrets",
+                "category": "credential_exposure", "severity": "KRITISCH",
+                "title": "Privater Schlüssel gefunden",
+                "evidence": "https://github.com/acmecorp/internal/blob/main/.ssh/id_rsa",
+                "cve_ids": [],
+            },
+        ],
+    }), encoding="utf-8")
+
+    leads = tmp_path / "leads.csv"
+    leads.write_text(
+        "email,company_name,company_domain\n"
+        "phil@acme.com,Acme GmbH,acme.com\n",
+        encoding="utf-8",
+    )
+
+    stats = run_export_pipeline(
+        leads_path=leads, scans_dir=scans,
+        output_path=tmp_path / "out.csv", strict=True,
+    )
+    assert stats["written"] == 1
+
+
 def test_pipeline_handles_synthetic_scan(tmp_path):
     """Smoke test against a synthetic scan JSON so we validate the
     render-path without requiring the full fixture set."""

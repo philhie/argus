@@ -122,3 +122,13 @@ def test_exchange_ecp_and_powershell_both_get_bonus():
     f = _f(id="EX-004", module="exchange", category="exchange_exposure",
            severity="KRITISCH", title="/PowerShell offen")
     assert score_finding(f) == 32
+
+
+def test_cred_004_gf_email_gets_hibp_boost():
+    # GF-specific breach is the highest-converting finding — must score
+    # at least as well as CRED-001 (plaintext password breach).
+    # KRITISCH(10) + cred(6) + crit(4) + hibp(4) = 24
+    f = _f(id="CRED-004", module="credential_exposure",
+           category="credential_exposure", severity="KRITISCH",
+           title="GF-Mail in Leck")
+    assert score_finding(f) == 24

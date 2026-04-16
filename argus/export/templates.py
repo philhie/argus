@@ -47,9 +47,33 @@ TEMPLATES: dict[str, dict[str, str]] = {
         "short": "Telnet offen im Internet",
         "what": "Ihr Telnet-Dienst ist öffentlich erreichbar — Telnet überträgt Zugangsdaten unverschlüsselt und gilt seit über einem Jahrzehnt als nicht mehr einsetzbar.",
     },
+    "shodan:smb": {
+        "short": "SMB offen im Internet",
+        "what": "Ihr SMB-Dienst (Port 445) ist öffentlich erreichbar — die gleiche Angriffsfläche, die WannaCry und NotPetya 2017 in ganzen Unternehmensnetzen ausgenutzt haben.",
+    },
+    "shodan:mssql": {
+        "short": "MS-SQL offen im Internet",
+        "what": "Ihre Microsoft-SQL-Datenbank antwortet auf Port 1433 aus dem offenen Internet — Angreifer können direkt Login-Versuche starten, ohne VPN oder Firewall dazwischen.",
+    },
+    "shodan:vnc": {
+        "short": "VNC offen im Internet",
+        "what": "Ihr VNC-Dienst ist öffentlich erreichbar — VNC ist ein häufig angegriffener Remote-Desktop-Zugang und wird regelmäßig von Ransomware-Gruppen ausgenutzt.",
+    },
+    "shodan:elasticsearch": {
+        "short": "Elasticsearch offen",
+        "what": "Ihr Elasticsearch-Cluster ist öffentlich erreichbar — in Standardkonfiguration erlaubt Elasticsearch Lese- und Schreibzugriff ohne Authentifizierung.",
+    },
+    "shodan:memcached": {
+        "short": "Memcached offen im Internet",
+        "what": "Ihr Memcached-Server ist öffentlich erreichbar — das ist nicht nur ein Datenrisiko, sondern auch ein beliebter Verstärker für DDoS-Angriffe.",
+    },
     "shodan:cve": {
         "short": "Ungepatchte Schwachstellen aktiv",
         "what": "Auf Ihrer Server-IP sind {cve_count} bekannte Schwachstellen mit verfügbaren Patches aktiv (z.B. {cve_example}) — alle haben Security-Updates, die nicht eingespielt wurden.",
+    },
+    "shodan:outdated_os": {
+        "short": "Veraltetes Betriebssystem",
+        "what": "Auf {ip} läuft ein Betriebssystem, das keine Sicherheitsupdates mehr erhält — jede künftige Schwachstelle bleibt dauerhaft offen.",
     },
     "shodan:many_ports": {
         "short": "Große Angriffsfläche",
@@ -77,6 +101,14 @@ TEMPLATES: dict[str, dict[str, str]] = {
     "exchange:hostname_leak": {
         "short": "Interner Hostname geleakt",
         "what": "Ihr Exchange-Server verrät über den X-FEServer-Header den internen Hostnamen — Angreifer können damit Rückschlüsse auf Ihre interne Netzwerkstruktur ziehen.",
+    },
+    "exchange:ad_domain_leak": {
+        "short": "AD-Domainname geleakt",
+        "what": "Über die NTLM-Challenge Ihres Exchange-Servers ist Ihr interner Active-Directory-Domainname im offenen Internet abrufbar — die Grundlage für jeden gezielten internen Angriff.",
+    },
+    "exchange:fqdn_leak": {
+        "short": "Server-FQDN geleakt",
+        "what": "Über die NTLM-Challenge Ihres Exchange-Servers ist der vollständige interne Server-Hostname im offenen Internet abrufbar — damit kennen Angreifer Ihren Server, bevor sie überhaupt im Netzwerk sind.",
     },
 
     # ─── FILE EXPOSURE ───────────────────────────────────────────────
@@ -152,6 +184,22 @@ TEMPLATES: dict[str, dict[str, str]] = {
         "short": "Subdomain-Spoofing möglich",
         "what": "Ihre DMARC-Subdomain-Policy steht auf 'none' — Angreifer können mail.{domain} oder rechnung.{domain} für Spoofing verwenden, auch wenn die Hauptdomain geschützt ist.",
     },
+    "email:no_mta_sts": {
+        "short": "Kein MTA-STS aktiv",
+        "what": "Für Ihre Domain ist keine MTA-STS-Policy konfiguriert — Angreifer können so TLS-Downgrade-Angriffe auf eingehende E-Mails durchführen und den Inhalt im Klartext mitlesen.",
+    },
+    "email:no_dane": {
+        "short": "Kein DANE/TLSA für Mail",
+        "what": "Ihre Mailserver haben keine DANE/TLSA-Einträge — ohne DANE lässt sich das TLS-Zertifikat Ihres Mailservers nicht kryptografisch binden, was Man-in-the-Middle bei der Zustellung ermöglicht.",
+    },
+    "email:spf_too_many_lookups": {
+        "short": "SPF überschreitet Limit",
+        "what": "Ihr SPF-Record überschreitet das RFC-Limit von 10 DNS-Lookups — empfangende Server brechen die Prüfung mit 'PermError' ab und Ihre E-Mails landen im Spam oder werden abgelehnt.",
+    },
+    "email:zone_transfer": {
+        "short": "DNS Zone Transfer offen",
+        "what": "Ihr Nameserver erlaubt öffentliche Zone Transfers — ein Angreifer erhält mit einem einzigen Befehl alle Ihre DNS-Einträge (Subdomains, Mailserver, interne Strukturen).",
+    },
 
     # ─── CREDENTIALS / BREACHES ──────────────────────────────────────
 
@@ -166,6 +214,14 @@ TEMPLATES: dict[str, dict[str, str]] = {
     "cred:hibp_metadata": {
         "short": "Mail-Adresse in Datenlecks",
         "what": "Ihre {email} ist in {breach_count} Datenlecks gefunden. Auch ohne Klartext-Passwort liefert das Angreifern wertvolles Material für gezieltes Phishing.",
+    },
+    "cred:hibp_recent": {
+        "short": "Mail in aktuellem Datenleck",
+        "what": "Ihre {email} wurde in einem erst kürzlich veröffentlichten Datenleck gefunden — aktuelle Lecks werden aktiv auf kriminellen Marktplätzen gehandelt und für Credential-Stuffing gegen Unternehmenskonten eingesetzt.",
+    },
+    "cred:hibp_gf": {
+        "short": "GF-Mail in Datenleck",
+        "what": "Die Geschäftsführer-Mailadresse {email} erscheint in einem Datenleck — kompromittierte GF-Konten sind die Grundlage für jeden CEO-Fraud und gezielte Spear-Phishing-Angriffe auf Ihre Mitarbeiter.",
     },
 
     # ─── ADMIN PANELS ────────────────────────────────────────────────
@@ -223,6 +279,39 @@ TEMPLATES: dict[str, dict[str, str]] = {
     "srcmap:exposed": {
         "short": "Quellcode öffentlich abrufbar",
         "what": "Eine JavaScript-Source-Map ist öffentlich abrufbar ({bytes} Bytes Original-Quellcode) — Angreifer haben Ihren ungekürzten Code zum gezielten Schwachstellen-Suchen.",
+    },
+
+    # ─── WAYBACK / ARCHIV ────────────────────────────────────────────
+
+    "wayback:live_sensitive": {
+        "short": "Historische Datei noch erreichbar",
+        "what": "Eine historisch sensitive Datei Ihrer Domain ist heute noch unter der Original-URL abrufbar — was einmal im Webarchiv gelandet ist, bleibt dort für Angreifer auffindbar.",
+    },
+    "wayback:archived_sensitive": {
+        "short": "Sensitive Dateien im Webarchiv",
+        "what": "Sensitive Pfade Ihrer Domain sind im öffentlichen Webarchiv dokumentiert — Angreifer müssen nicht raten, sie lesen nach, welche Dateien Sie in der Vergangenheit exponiert hatten.",
+    },
+    "wayback:many_sensitive": {
+        "short": "Viele Archiv-Funde",
+        "what": "{count} sensitive URLs Ihrer Domain sind im Webarchiv dokumentiert — die Häufung deutet auf wiederkehrende Konfigurationsprobleme hin, die weiterhin ausgenutzt werden können.",
+    },
+
+    # ─── COOKIES / HEADERS ───────────────────────────────────────────
+
+    "cookie:insecure": {
+        "short": "Cookie ohne Secure-Flag",
+        "what": "Session-Cookies Ihrer Webanwendung werden ohne Secure-Flag gesetzt — bei jeder HTTP-Verbindung im gleichen Netzwerk sind sie abgreifbar und erlauben Session-Hijacking.",
+    },
+    "tech:version_leak": {
+        "short": "Server-Version geleakt",
+        "what": "Ihr Server-Header verrät die exakte Software-Version — Angreifer können damit gezielt in öffentlichen CVE-Datenbanken nach passenden Exploits für genau diese Version suchen.",
+    },
+
+    # ─── CLOUD STORAGE ───────────────────────────────────────────────
+
+    "cloud:public_bucket": {
+        "short": "Cloud-Bucket öffentlich lesbar",
+        "what": "Ein Cloud-Speicher Ihres Unternehmens ist öffentlich lesbar — alle darin abgelegten Dateien können ohne Authentifizierung heruntergeladen werden.",
     },
 
     # ─── GOOGLE DORKING ──────────────────────────────────────────────

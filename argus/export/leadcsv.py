@@ -88,18 +88,22 @@ def calc_downtime(employee_count: str) -> str:
 
 
 def pick_subdomain(scan_data: dict) -> str:
-    """Pick a notable subdomain from scan evidence, else return the apex."""
+    """Pick a notable subdomain from scan evidence, else return the apex.
+
+    Scans every match in every evidence string — a single evidence line can
+    mention several subdomains (e.g. a DNS answer list), and we don't want
+    to miss an interesting one because an uninteresting one sat earlier
+    in the string.
+    """
     domain = scan_data.get("domain", "") or ""
     if not domain:
         return ""
     pattern = re.compile(rf"\b([a-z0-9-]+\.{re.escape(domain)})", re.IGNORECASE)
     for f in scan_data.get("findings", []) or []:
         ev = f.get("evidence", "") or ""
-        m = pattern.search(ev)
-        if not m:
-            continue
-        sub = m.group(1).lower()
-        for prefix in _INTERESTING_PREFIXES:
-            if sub.startswith(prefix):
-                return sub
+        for raw in pattern.findall(ev):
+            sub = raw.lower()
+            for prefix in _INTERESTING_PREFIXES:
+                if sub.startswith(prefix):
+                    return sub
     return domain

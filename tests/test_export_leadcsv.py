@@ -65,6 +65,18 @@ def test_pick_subdomain_empty_domain():
     assert pick_subdomain({"domain": "", "findings": []}) == ""
 
 
+def test_pick_subdomain_checks_all_matches_in_evidence():
+    # Single evidence string with two subdomains — the interesting one
+    # is second in the string. First-match-only logic would miss it.
+    scan = {
+        "domain": "acme.com",
+        "findings": [
+            {"evidence": "DNS A-Record: random.acme.com → 1.1.1.1, mail.acme.com → 2.2.2.2"},
+        ],
+    }
+    assert pick_subdomain(scan) == "mail.acme.com"
+
+
 # ──────────────────────────────────────────────────────────────────────
 # CSV column normalization
 # ──────────────────────────────────────────────────────────────────────

@@ -61,12 +61,14 @@ def score_finding(finding: dict) -> int:
     if module in HIGH_VERIFIABILITY_MODULES:
         score += _VERIFIABILITY_BOOST
 
-    if fid.startswith("CRED-001"):
+    if fid.startswith("CRED-001") or fid.startswith("CRED-004"):
+        # CRED-004 (GF email in breach) is every bit as high-signal as
+        # CRED-001 for cold outreach — it's the single most convertible
+        # finding because it names the recipient personally.
         score += _HIBP_PASSWORD_BOOST
 
-    if fid in _EXPOSED_FILE_IDS or fid.startswith("FILE-"):
-        if fid in _EXPOSED_FILE_IDS:
-            score += _EXPOSED_FILE_BOOST
+    if fid in _EXPOSED_FILE_IDS:
+        score += _EXPOSED_FILE_BOOST
 
     if fid in {"EX-003", "EX-004"}:
         score += _EXCHANGE_ECP_BOOST

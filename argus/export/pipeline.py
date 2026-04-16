@@ -98,8 +98,15 @@ def process_lead(lead: dict, scan_data: dict, use_llm: bool = False) -> dict | N
     """Apply the full pipeline to one lead. Returns None when SKIP."""
     findings_raw = scan_data.get("findings", []) or []
 
+    # Scanner sometimes fails to populate company_name — fall back to the
+    # Apollo value so the GitHub filter still has a usable ownership signal.
+    company_name_for_filter = (
+        (scan_data.get("company_name") or "").strip()
+        or (lead.get("company_name") or "").strip()
+    )
+
     findings = preprocess(findings_raw)
-    findings = filter_findings(findings, scan_data.get("company_name", "") or "")
+    findings = filter_findings(findings, company_name_for_filter)
     if not findings:
         return None
 
@@ -171,6 +178,7 @@ def run_export_pipeline(
         "written": 0,
         "skipped": 0,
         "missing": 0,
+        "no_email": 0,
         "review_skipped": 0,
         "tier_a": 0,
         "tier_b": 0,
@@ -184,6 +192,12 @@ def run_export_pipeline(
         writer.writeheader()
 
         for lead in read_leads(leads_path):
+            email = (lead.get("email", "") or "").strip()
+            if not email or "@" not in email:
+                stats["no_email"] += 1
+                logger.info("[SKIP] Lead has no usable email")
+                continue
+
             domain = (lead.get("company_domain", "") or "").strip().lower()
             if not domain or domain not in scan_index:
                 stats["missing"] += 1

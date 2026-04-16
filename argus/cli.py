@@ -131,6 +131,7 @@ def cmd_export(args: argparse.Namespace) -> None:
     print(f"Written:        {stats['written']}")
     print(f"Skipped (low):  {stats['skipped']}")
     print(f"Missing scans:  {stats['missing']}")
+    print(f"No email:       {stats['no_email']}")
     print(f"Review-skipped: {stats['review_skipped']}")
     print(f"Tier A:         {stats['tier_a']}")
     print(f"Tier B:         {stats['tier_b']}")
