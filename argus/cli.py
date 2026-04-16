@@ -114,6 +114,31 @@ def cmd_scan(args: argparse.Namespace) -> None:
     print(f"\nScan complete. {len(summary_rows)} domain(s) processed.")
 
 
+def cmd_export(args: argparse.Namespace) -> None:
+    """Convert scan JSONs + Apollo lead CSV into an Instantly-ready CSV."""
+    from argus.export.pipeline import run_export_pipeline
+
+    stats = run_export_pipeline(
+        leads_path=args.leads,
+        scans_dir=args.scans,
+        output_path=args.output,
+        use_llm=args.llm,
+        strict=not args.allow_review,
+    )
+
+    print()
+    print("--- Export Summary ---")
+    print(f"Written:        {stats['written']}")
+    print(f"Skipped (low):  {stats['skipped']}")
+    print(f"Missing scans:  {stats['missing']}")
+    print(f"No email:       {stats['no_email']}")
+    print(f"Review-skipped: {stats['review_skipped']}")
+    print(f"Tier A:         {stats['tier_a']}")
+    print(f"Tier B:         {stats['tier_b']}")
+    print(f"Tier C:         {stats['tier_c']}")
+    print(f"Output:         {args.output}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="argus",
@@ -134,11 +159,22 @@ def main() -> None:
     scan_parser.add_argument("--force", "-f", action="store_true", help="Rescan already-scanned domains")
     scan_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
+    # export command
+    export_parser = subparsers.add_parser("export", help="Convert scan JSONs to Instantly CSV")
+    export_parser.add_argument("--leads", "-l", required=True, help="Apollo CSV with lead data")
+    export_parser.add_argument("--scans", "-s", required=True, help="Directory containing scan JSONs")
+    export_parser.add_argument("--output", "-o", default="instantly_ready.csv", help="Output CSV path")
+    export_parser.add_argument("--llm", action="store_true", help="Enable LLM fallback for untemplated findings (v1: no-op)")
+    export_parser.add_argument("--allow-review", action="store_true", help="Write rows with [REVIEW] tags instead of skipping (debug)")
+    export_parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+
     args = parser.parse_args()
     setup_logging(getattr(args, "verbose", False))
 
     if args.command == "scan":
         cmd_scan(args)
+    elif args.command == "export":
+        cmd_export(args)
     else:
         parser.print_help()
 

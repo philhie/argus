@@ -1,0 +1,12 @@
+email,first_name,last_name,title,company_name,company_domain,linkedin_url,industry,company_size,city,employee_count
+info@laseroptik.com,Max,Mustermann,Geschäftsführer,Laseroptik GmbH,laseroptik.com,https://linkedin.com/in/example,Optik,50-200,Garbsen,150
+info@carlsquare.com,Anna,Beispiel,Managing Partner,Carlsquare GmbH,carlsquare.com,https://linkedin.com/in/example,Finance,50-200,Hamburg,100
+info@microstep.com,Lars,Test,Geschäftsführer,Microstep AG,microstep.com,,Manufacturing,200-500,Stuttgart,300
+info@cfc-contor.com,Maria,Probe,Geschäftsführer,CFC Contor GmbH,cfc-contor.com,,Trading,20-50,Hamburg,30
+info@dotsource.de,Peter,Muster,CEO,dotSource SE,dotsource.de,,Digital Agency,200-500,Jena,400
+info@checksum.com,Julia,Demo,CTO,Checksum Inc.,checksum.com,,SaaS,50-200,Berlin,80
+info@interlake.net,Stefan,Beispiel,Geschäftsführer,Interlake GmbH,interlake.net,,IT Services,20-50,München,40
+info@tpa-global.com,Andrea,Muster,Managing Director,TPA Global,tpa-global.com,,Consulting,50-200,Wien,120
+info@gracher.de,Michael,Test,Geschäftsführer,Gracher GmbH,gracher.de,,Insurance,20-50,Trier,35
+info@myconvento.com,Sabine,Probe,Geschäftsführer,myConvento GmbH,myconvento.com,,PR Software,20-50,Bonn,25
+info@oli-move.de,Thomas,Demo,Geschäftsführer,Oli-Move GmbH,oli-move.de,,Logistics,20-50,Essen,30
