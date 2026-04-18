@@ -155,12 +155,12 @@ ${VENV} -m argus export \
 echo ""
 
 TOTAL_SCANS=$(ls -1 "${SCANS_DIR}"/*.json 2>/dev/null | grep -cv "^_" || echo 0)
-TOTAL_LEADS=$(tail -n +2 "${LEADS_CSV}" | wc -l)
+TOTAL_LEADS=$(${VENV} -c "import csv; r=csv.reader(open('${LEADS_CSV}')); next(r); print(sum(1 for _ in r))")
 REMAINING=$((TOTAL_LEADS - TOTAL_SCANS))
 [ "${REMAINING}" -lt 0 ] && REMAINING=0
 
 if [ -f "${OUTPUT_FILE}" ]; then
-    ROWS=$(tail -n +2 "${OUTPUT_FILE}" | wc -l)
+    ROWS=$(${VENV} -c "import csv; r=csv.reader(open('${OUTPUT_FILE}')); next(r); print(sum(1 for _ in r))")
     TIER_A=$(grep -c '"A"' "${OUTPUT_FILE}" 2>/dev/null || echo 0)
     TIER_B=$(grep -c '"B"' "${OUTPUT_FILE}" 2>/dev/null || echo 0)
 
