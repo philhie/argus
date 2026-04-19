@@ -176,6 +176,12 @@ def build_template_key(finding: dict) -> Optional[str]:
             return "admin:joomla"
         if "Drupal" in title:
             return "admin:drupal"
+        # Generic fallback by panel type
+        if fid.startswith("ADMIN-002"):
+            return "admin:database_tool"
+        if fid.startswith("ADMIN-003"):
+            return "admin:server_management"
+        return "admin:generic"
 
     # ── TLS ───────────────────────────────────────────────────────────
     if module == "tls_analysis":
@@ -230,6 +236,59 @@ def build_template_key(finding: dict) -> Optional[str]:
     if module == "http_headers":
         if fid.startswith("HDR-COOKIE"):
             return "cookie:insecure"
+        if fid == "HDR-002":
+            return "header:missing_security"
+
+    # ── CORS ────────────────────────────────────────────────────────────
+    if module == "cors":
+        if fid == "CORS-001":
+            return "cors:wildcard"
+        if fid == "CORS-002":
+            return "cors:null_origin"
+        if fid == "CORS-003":
+            return "cors:credentials"
+
+    # ── API discovery ──────────────────────────────────────────────────
+    if module == "api_discovery":
+        title_l = (title or "").lower()
+        if "actuator" in title_l or "env" in title_l or "beans" in title_l:
+            return "api:actuator_exposed"
+        return "api:swagger_exposed"
+
+    # ── Certificate issues ─────────────────────────────────────────────
+    if module == "cert_san":
+        if fid.startswith("CERT-002"):
+            return "cert:self_signed"
+        if fid.startswith("CERT-005"):
+            return "cert:wrong_hostname"
+        if fid.startswith("CERT-004"):
+            return "cert:weak_key"
+        if fid.startswith("CERT-001"):
+            return "cert:expiring"
+
+    # ── WHOIS ──────────────────────────────────────────────────────────
+    if module == "whois_check" or fid == "WHOIS-001":
+        return "whois:expiring"
+
+    # ── Subdomain takeover ─────────────────────────────────────────────
+    if module == "subdomain_takeover":
+        return "takeover:dangling_cname"
+
+    # ── DNSSEC ─────────────────────────────────────────────────────────
+    if module == "dnssec" or fid == "DNSSEC-001":
+        return "dnssec:not_enabled"
+
+    # ── GraphQL ────────────────────────────────────────────────────────
+    if module == "graphql_introspection" or fid == "GQL-001":
+        return "graphql:introspection"
+
+    # ── Favicon hash ───────────────────────────────────────────────────
+    if module == "favicon_hash":
+        return "favicon:known_product"
+
+    # ── IP shared hosting ──────────────────────────────────────────────
+    if fid == "IP-002":
+        return "ip:shared_hosting"
 
     # ── Cloud buckets ─────────────────────────────────────────────────
     if module == "cloud_buckets":

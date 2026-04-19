@@ -381,4 +381,113 @@ TEMPLATES: dict[str, dict[str, str]] = {
         "short": "Passwort auf GitHub exponiert",
         "what": "Ein Passwort mit Bezug zu Ihrem Unternehmen liegt in einem öffentlichen GitHub-Repository — direkter Einstiegspunkt für jeden, der die Referenz findet.",
     },
+
+    # ─── HTTP HEADERS (missing security headers) ─────────────────────
+
+    "header:missing_security": {
+        "short": "Sicherheits-Header fehlen",
+        "what": "Ihrem Webserver fehlen grundlegende Sicherheits-Header (HSTS, X-Frame-Options, Content-Security-Policy) — ohne diese kann Ihr Login von Drittseiten eingebettet und Ihre Nutzer per Clickjacking angegriffen werden.",
+    },
+
+    # ─── CORS ────────────────────────────────────────────────────────
+
+    "cors:wildcard": {
+        "short": "CORS-Zugriff für alle offen",
+        "what": "Ihr Server erlaubt Cross-Origin-Requests von jeder beliebigen Domain (Access-Control-Allow-Origin: *) — jede fremde Website kann Daten aus Ihren internen Schnittstellen abfragen.",
+    },
+    "cors:null_origin": {
+        "short": "CORS Null-Origin erlaubt",
+        "what": "Ihr Server akzeptiert Cross-Origin-Requests mit 'null' als Herkunft — ein bekannter Umgehungsweg, den Angreifer nutzen, um Ihre Same-Origin-Policy auszuhebeln.",
+    },
+    "cors:credentials": {
+        "short": "CORS mit Credentials offen",
+        "what": "Ihr Server erlaubt Cross-Origin-Requests mit Zugangsdaten (Cookies, Auth-Header) — Angreifer können damit aktive Sitzungen Ihrer Nutzer fernsteuern.",
+    },
+
+    # ─── API DISCOVERY ───────────────────────────────────────────────
+
+    "api:swagger_exposed": {
+        "short": "API-Dokumentation öffentlich",
+        "what": "Ihre API-Dokumentation (Swagger/OpenAPI) ist öffentlich abrufbar — Angreifer sehen damit jeden Endpunkt, jeden Parameter und jeden Datentyp Ihrer Schnittstellen.",
+    },
+    "api:actuator_exposed": {
+        "short": "Server-Diagnose öffentlich",
+        "what": "Spring Actuator-Endpoints sind öffentlich erreichbar — sie zeigen Umgebungsvariablen, Datenbankverbindungen und laufende Prozesse. Ein offenes Fenster in Ihre Serverkonfiguration.",
+    },
+
+    # ─── CERTIFICATE ISSUES ──────────────────────────────────────────
+
+    "cert:expiring": {
+        "short": "Zertifikat läuft bald ab",
+        "what": "Ihr SSL-Zertifikat läuft in Kürze ab — danach zeigen alle Browser eine Warnseite statt Ihrer Website. Kunden und Geschäftspartner können Sie nicht mehr sicher erreichen.",
+    },
+    "cert:self_signed": {
+        "short": "Selbstsigniertes Zertifikat",
+        "what": "Ihr Server verwendet ein selbstsigniertes SSL-Zertifikat — Browser warnen Besucher aktiv vor dem Besuch Ihrer Website. Kein Geschäftspartner klickt sich durch eine Sicherheitswarnung.",
+    },
+    "cert:wrong_hostname": {
+        "short": "Zertifikat passt nicht",
+        "what": "Ihr SSL-Zertifikat ist für eine andere Domain ausgestellt — Browser zeigen eine Sicherheitswarnung, die Besucher vertreibt und Vertrauen zerstört.",
+    },
+    "cert:weak_key": {
+        "short": "Schwacher Zertifikat-Schlüssel",
+        "what": "Ihr SSL-Zertifikat verwendet einen zu kurzen kryptografischen Schlüssel — die Verschlüsselung zwischen Browser und Server kann gebrochen werden.",
+    },
+
+    # ─── WHOIS ───────────────────────────────────────────────────────
+
+    "whois:expiring": {
+        "short": "Domain läuft bald ab",
+        "what": "Ihre Domain läuft in weniger als 30 Tagen ab — wenn die Verlängerung verpasst wird, kann jeder Ihre Domain registrieren und sich als Ihr Unternehmen ausgeben.",
+    },
+
+    # ─── SUBDOMAIN TAKEOVER ──────────────────────────────────────────
+
+    "takeover:dangling_cname": {
+        "short": "Subdomain übernehmbar",
+        "what": "Eine Ihrer Subdomains zeigt per DNS auf einen Dienst, der nicht mehr existiert — jeder kann diesen Dienst neu registrieren und unter Ihrem Domainnamen Inhalte veröffentlichen.",
+    },
+
+    # ─── DNSSEC ──────────────────────────────────────────────────────
+
+    "dnssec:not_enabled": {
+        "short": "DNS nicht signiert",
+        "what": "Ihre DNS-Einträge sind nicht mit DNSSEC signiert — Angreifer können DNS-Antworten fälschen und Ihre Besucher unbemerkt auf fremde Server umleiten.",
+    },
+
+    # ─── GRAPHQL ─────────────────────────────────────────────────────
+
+    "graphql:introspection": {
+        "short": "GraphQL-Schema exponiert",
+        "what": "Ihr GraphQL-Endpoint erlaubt Introspection — Angreifer können damit Ihre komplette Datenstruktur, alle Abfragen und alle Datentypen einsehen.",
+    },
+
+    # ─── FAVICON HASH ────────────────────────────────────────────────
+
+    "favicon:known_product": {
+        "short": "Versteckte Software erkannt",
+        "what": "Über den Favicon-Hash wurde identifiziert, welche Software auf Ihrem Server läuft — Angreifer nutzen diese Technik, um gezielt nach bekannten Schwachstellen in Ihrer Software-Version zu suchen.",
+    },
+
+    # ─── ADMIN PANEL (generic fallback) ──────────────────────────────
+
+    "admin:generic": {
+        "short": "Admin-Panel offen im Web",
+        "what": "Ein Verwaltungsinterface ist ohne IP-Beschränkung aus dem Internet erreichbar — Brute-Force-Angriffe gegen den Admin-Zugang laufen vermutlich bereits automatisiert.",
+    },
+    "admin:database_tool": {
+        "short": "Datenbank-Tool öffentlich",
+        "what": "Ein Datenbank-Verwaltungstool ist öffentlich über das Internet erreichbar — ein erfolgreicher Login-Versuch bedeutet sofortigen Vollzugriff auf Ihre Geschäftsdaten.",
+    },
+    "admin:server_management": {
+        "short": "Server-Management exponiert",
+        "what": "Ihr Server-Management-Interface ist öffentlich erreichbar — Angreifer können versuchen, Zugangsdaten zu erraten oder bekannte Schwachstellen auszunutzen.",
+    },
+
+    # ─── SHARED HOSTING ──────────────────────────────────────────────
+
+    "ip:shared_hosting": {
+        "short": "Shared Hosting erkannt",
+        "what": "Ihre Website teilt sich eine IP-Adresse mit anderen Kunden — ein Angriff auf einen Mitmieter kann Ihre Website in Mitleidenschaft ziehen.",
+    },
 }
