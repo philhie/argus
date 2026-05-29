@@ -72,12 +72,11 @@ fi
 say "Verifying the CLI runs"
 "$VENV_PY" -m argus --help >/dev/null 2>&1 || fail "Argus installed but 'python -m argus' failed to run. Re-run with '.venv/bin/python -m argus --help' to see the error."
 
+printf '\n\033[1;32m%s\033[0m\n' '================================================================'
+printf '\033[1;32m%s\033[0m\n'   ' ARGUS is ready.'
+printf '\033[1;32m%s\033[0m\n\n' '================================================================'
+
 cat <<'EOF'
-
-[1;32m================================================================[0m
-[1;32m ARGUS is ready.[0m
-[1;32m================================================================[0m
-
 Next steps:
 
   1. (Optional) Add API keys to .env. All keys are optional —
