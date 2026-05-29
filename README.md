@@ -31,12 +31,30 @@ Example output: 36 findings, score 44/100, 8 critical, 5 technologies detected, 
 
 ## Setup
 
+One command does everything — creates the virtualenv, installs Argus, and prepares `.env`:
+
+```bash
+./setup.sh
+```
+
+It's safe to re-run (reuses an existing `.venv`, never overwrites your `.env`). Then fill in API keys (see below).
+
+<details>
+<summary>Manual setup (if you'd rather not use the script)</summary>
+
 ```bash
 python3 -m venv .venv
+.venv/bin/pip install --upgrade pip      # required: the bundled pip is too old to install Argus
 .venv/bin/pip install -e ".[all,dev]"
 cp .env.example .env
 # Fill in API keys (see below)
 ```
+
+The `pip install --upgrade pip` step is not optional. The pip that ships with the macOS system Python (3.9) predates PEP 660 and fails with `setup.py not found` when installing Argus, which is a `pyproject.toml`-only project.
+
+</details>
+
+Argus runs inside the virtualenv. Either activate it (`source .venv/bin/activate`) or prefix commands with `.venv/bin/python`, e.g. `.venv/bin/python -m argus ...`.
 
 ## API Keys
 
