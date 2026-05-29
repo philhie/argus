@@ -38,11 +38,12 @@ an unresolved `{placeholder}`. Pass `--allow-review` for debugging.
 
 ## Setup
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -e ".[all,dev]"
-cp .env.example .env
-# Fill in: SHODAN_API_KEY, HIBP_API_KEY, GITHUB_TOKEN, SERPAPI_KEY
+./setup.sh   # creates .venv, upgrades pip, installs Argus, copies .env.example -> .env
+# Then fill in: SHODAN_API_KEY, HIBP_API_KEY, GITHUB_TOKEN, SERPAPI_KEY
 ```
+`setup.sh` is idempotent. Manual setup must run `.venv/bin/pip install --upgrade pip`
+before `pip install -e ".[all,dev]"` — the system-Python pip (3.9) is too old for
+this pyproject-only project and fails with `setup.py not found`.
 
 ## Testing
 ```bash
